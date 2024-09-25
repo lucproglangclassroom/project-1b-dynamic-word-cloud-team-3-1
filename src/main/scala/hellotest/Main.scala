@@ -3,12 +3,16 @@ import scala.collection.mutable
 import scala.io.StdIn
 import scala.sys.process._
 import mainargs.{main, arg, ParserForMethods}
+import org.log4s._
+import org.slf4j.LoggerFactory
 
 
 object Main:
+  
   def main(args: Array[String]) = 
   // def main(args: Array[String]) = ParserForMethods(this).runOrExit(args.toIndexedSeq)
-
+  //   // private val logger: org.log4s.Logger = Option(org.log4s.getLogger).getOrElse(LoggerFactory.getLogger("Main"))
+  //   private val logger: org.slf4j.Logger = LoggerFactory.getLogger("Main")
   //   // internal main method with arguments annotated for parsing
   //   @main
   //   def run(
@@ -18,9 +22,7 @@ object Main:
   //       @arg(short = 's', doc = "number of steps between word cloud updates") everyKSteps: Int = 10,
   //       @arg(short = 'f', doc = "minimum frequency for a word to be included in the cloud") minFrequency: Int = 3) =
 
-    // logger.debug(f"howMany=$cloudSize minLength=$minLength lastNWords=$windowSize everyKSteps=$everyKSteps minFrequency=$minFrequency")
-      // ...
-      
+  //       logger.debug(f"howMany=$cloudSize minLength=$minLength lastNWords=$windowSize everyKSteps=$everyKSteps minFrequency=$minFrequency")
       
     // Default values
     var cloudSize = 10
