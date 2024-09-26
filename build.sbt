@@ -12,6 +12,7 @@ libraryDependencies ++= Seq(
   "com.lihaoyi" %% "mainargs" % "0.7.5",
   "org.log4s" %% "log4s" % "1.10.0",
   "org.slf4j" % "slf4j-simple" % "2.0.16",
+  "org.knowm.xchart" % "xchart" % "3.8.8"
 )
 
 enablePlugins(JavaAppPackaging)
