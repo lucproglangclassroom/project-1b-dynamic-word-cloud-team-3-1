@@ -113,7 +113,10 @@ object Main:
       @arg(short = 'i', doc = "file path for words to ignore") ignoreFilePath: Option[String] = None,
       @arg(short = 't', doc = "test flag to run without visualization") test: Flag = Flag()
   ): Unit = {
-    println(f"Running with cloudSize=$cloudSize, minLength=$minLength, windowSize=$windowSize, everyKSteps=$everyKSteps, minFrequency=$minFrequency, test=$test")
+    val logger = 
+      import scala.language.unsafeNulls
+      org.log4s.getLogger
+    logger.debug(f"howMany=$cloudSize minLength=$minLength lastNWords=$windowSize everyKSteps=$everyKSteps minFrequency=$minFrequency")  
 
     // Initialize window and frequency map
     val window = mutable.Queue[String]()
