@@ -88,9 +88,10 @@ or you can run it by passing the a .txt file to read from it. This command will 
 ./target/universal/stage/bin/scalatest < lesmisrables01unkngoog_djvu.txt
 ```
 
-Add the ignore file to it.
+Add the **ignore** file to it.
+```
 ./target/universal/stage/bin/scalatest -i ignore.txt < lesmisrables01unkngoog_djvu.txt
-
+```
 On Windows, you might need backslashes. WSL (Windows Subsystem for Linux) recommended instead.
 
 Video Visualization: Link: https://loyolauniversitychicago-my.sharepoint.com/:v:/g/personal/mnazari_luc_edu/EQ0o-edIZMFBj-X6NL0hiaYBKzaC1V-9yWjg-YdO7Exuug?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=XzSCay
