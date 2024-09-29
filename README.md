@@ -83,9 +83,11 @@ Then run outside of sbt like this:
 ```
 
 or you can run it by passing the a .txt file to read from it. This command will use the default parameters.
+
 ```
 ./target/universal/stage/bin/scalatest < lesmisrables01unkngoog_djvu.txt
 ```
+
 Add the ignore file to it.
 ./target/universal/stage/bin/scalatest -i ignore.txt < lesmisrables01unkngoog_djvu.txt
 
