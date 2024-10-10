@@ -9,24 +9,54 @@ import org.knowm.xchart.{PieChartBuilder, SwingWrapper}
 object Main:
 
   // Function to update the sliding window of words
-  def updateWindow(
-      word: String,
-      window: mutable.Queue[String],
-      wordFrequency: mutable.Map[String, Int],
-      windowSize: Int
-  ): Unit = {
-    window.enqueue(word)
-    wordFrequency(word) += 1
+  // def updateWindow(
+  //     word: String,
+  //     window: mutable.Queue[String],
+  //     wordFrequency: mutable.Map[String, Int],
+  //     windowSize: Int
+  // ): Unit = {
+  //   window.enqueue(word)
+  //   wordFrequency(word) += 1
 
-    // Remove the oldest word if the window exceeds size
-    if (window.size > windowSize) {
-      val oldWord = window.dequeue()
-      wordFrequency(oldWord) -= 1
-      if (wordFrequency(oldWord) == 0) {
-        wordFrequency.remove(oldWord)
+  //   // Remove the oldest word if the window exceeds size
+  //   if (window.size > windowSize) {
+  //     val oldWord = window.dequeue()
+  //     wordFrequency(oldWord) -= 1
+  //     if (wordFrequency(oldWord) == 0) {
+  //       wordFrequency.remove(oldWord)
+  //     }
+  //   }
+  // }
+
+  // Function to update the sliding window and word frequency map using immutable structures
+  def updateWindowImmutable(
+      word: String,
+      window: List[String],
+      wordFrequency: Map[String, Int],
+      windowSize: Int
+    ): (List[String], Map[String, Int]) = {
+      
+      // Add new word to the window and keep it to the specified windowSize
+      val newWindow = (word :: window).take(windowSize)
+
+      // Update frequency map immutably
+      val updatedFreq = wordFrequency.updatedWith(word) {
+        case Some(freq) => Some(freq + 1)
+        case None => Some(1)
       }
+
+      // Remove the oldest word from the frequency map if the window exceeds size
+      val finalFreq = if (newWindow.size > windowSize) {
+        val oldestWord = newWindow.last
+        updatedFreq.updatedWith(oldestWord) {
+          case Some(1) => None // Remove word if frequency is 1
+          case Some(freq) => Some(freq - 1)
+          case None => None
+        }
+      } else updatedFreq
+
+      (newWindow, finalFreq)
     }
-  }
 
   // Function to print the word cloud
   def printWordCloud(
@@ -49,38 +79,81 @@ object Main:
   }
 
   // Function to process the input and update the word cloud
+  // def processInput(
+  //     lines: Iterator[String],
+  //     minLength: Int,
+  //     window: mutable.Queue[String],
+  //     wordFrequency: mutable.Map[String, Int],
+  //     windowSize: Int,
+  //     everyKSteps: Int,
+  //     cloudSize: Int,
+  //     minFrequency: Int,
+  //     ignoreList: Set[String],
+  //     updateChart: Seq[(String, Int)] => Unit
+  // ): Unit = {
+  //   var steps = 0
+  //   val words = 
+  //     import scala.language.unsafeNulls
+  //     lines
+  //     .flatMap(l => l.split("(?U)[^\\p{Alpha}0-9']+"))
+  //     .map(_.toLowerCase)
+  //     // .filter(word => word != null && word.length >= minLength)
+  //     .filter(word => word != null && word.length >= minLength && !ignoreList.contains(word)) // Ignore words from ignore list
+
+
+  //   words.foreach { word =>
+  //     updateWindow(word, window, wordFrequency, windowSize)
+  //     steps += 1
+
+  //     // Update and print word cloud every `everyKSteps`
+  //     if (window.size >= windowSize && steps % everyKSteps == 0) {
+  //       printWordCloud(wordFrequency, cloudSize, minFrequency, updateChart)
+  //     }
+  //   }
+  // }
+  // Process input lines and update the word cloud with immutability in mind
   def processInput(
       lines: Iterator[String],
       minLength: Int,
-      window: mutable.Queue[String],
-      wordFrequency: mutable.Map[String, Int],
+      window: List[String], // Change to immutable List
+      wordFrequency: Map[String, Int], // Change to immutable Map
       windowSize: Int,
       everyKSteps: Int,
       cloudSize: Int,
       minFrequency: Int,
       ignoreList: Set[String],
       updateChart: Seq[(String, Int)] => Unit
-  ): Unit = {
-    var steps = 0
-    val words = 
-      import scala.language.unsafeNulls
-      lines
-      .flatMap(l => l.split("(?U)[^\\p{Alpha}0-9']+"))
-      .map(_.toLowerCase)
-      // .filter(word => word != null && word.length >= minLength)
-      .filter(word => word != null && word.length >= minLength && !ignoreList.contains(word)) // Ignore words from ignore list
+    ): Unit = {
+      var steps = 0
 
+      // Stream processing for input
+      val words = 
+        import scala.language.unsafeNulls
+        lines
+        .flatMap(l => l.split("(?U)[^\\p{Alpha}0-9']+"))
+        .map(_.toLowerCase)
+        .filter(word => word != null && word.length >= minLength && !ignoreList.contains(word)) // Filter words
 
-    words.foreach { word =>
-      updateWindow(word, window, wordFrequency, windowSize)
-      steps += 1
+      // Iterating over each word while immutably updating window and word frequency
+      var currentWindow = window
+      var currentWordFrequency = wordFrequency
 
-      // Update and print word cloud every `everyKSteps`
-      if (window.size >= windowSize && steps % everyKSteps == 0) {
-        printWordCloud(wordFrequency, cloudSize, minFrequency, updateChart)
+      // Convert immutable Map to mutable Map before passing to printWordCloud
+      
+
+      words.foreach { word =>
+        val (newWindow, newWordFrequency) = updateWindowImmutable(word, currentWindow, currentWordFrequency, windowSize)
+        currentWindow = newWindow
+        currentWordFrequency = newWordFrequency
+        steps += 1
+
+        // Update and print word cloud every `everyKSteps`
+        if (currentWindow.size >= windowSize && steps % everyKSteps == 0) {
+          val mutableWordFrequency = mutable.Map[String, Int]() ++= currentWordFrequency
+          printWordCloud(mutableWordFrequency, cloudSize, minFrequency, updateChart)
+        }
       }
     }
-  }
 
   // Create the chart and GUI
   def createChart(): (org.knowm.xchart.PieChart, SwingWrapper[org.knowm.xchart.PieChart]) = {
@@ -119,8 +192,11 @@ object Main:
     logger.debug(f"howMany=$cloudSize minLength=$minLength lastNWords=$windowSize everyKSteps=$everyKSteps minFrequency=$minFrequency")  
 
     // Initialize window and frequency map
-    val window = mutable.Queue[String]()
-    val wordFrequency = mutable.Map[String, Int]().withDefaultValue(0)
+    // val window = mutable.Queue[String]()
+    // val wordFrequency = mutable.Map[String, Int]().withDefaultValue(0)
+    val window = List[String]() // Using immutable List instead of mutable Queue
+    val wordFrequency = Map[String, Int]().withDefaultValue(0) // Using immutable Map
+
 
     // Load the ignore list from the file
     // val ignoreList = scala.io.Source.fromFile(ignoreFilePath).getLines().map(_.trim.toLowerCase).toSet
