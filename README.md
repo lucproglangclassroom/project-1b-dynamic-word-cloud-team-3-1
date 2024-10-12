@@ -10,7 +10,7 @@ Small project to get started with Scala and ScalaTest.
 $ sbt "run -c 3 -l 2 -w 5 -s 2 -f 1"
 ```
 
-Result: 
+**Result:** 
 ```
 a b c
 aa bb cc 
@@ -37,9 +37,13 @@ $ sbt coverage test coverageReport
 
 to see the code coverage percentages of your test suite.
 
-Result: 
-    [info] Statement coverage.: 25.30%
-    [info] Branch coverage....: 63.64%
+
+**Result:** 
+
+```
+[info] Statement coverage.: 24.60%
+[info] Branch coverage....: 52.63%
+```
 
 ## Running successive tasks with sbt
 
