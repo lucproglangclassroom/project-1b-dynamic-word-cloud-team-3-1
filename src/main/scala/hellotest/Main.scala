@@ -1,108 +1,12 @@
 package hellotest
 
-package hellotest
 import scala.collection.mutable
 import scala.io.StdIn
 import scala.sys.process._
 import mainargs.{main, arg, ParserForMethods, Flag}
 import org.knowm.xchart.{PieChartBuilder, SwingWrapper}
-import javax.swing.SwingUtilities
 
-object Main:
-
-  // Function to update the sliding window and word frequency map using immutable structures
-  def updateWindowImmutable(
-    word: String,
-    window: List[String],
-    wordFrequency: Map[String, Int],
-    windowSize: Int
-  ): (List[String], Map[String, Int]) = {
-  
-    // If window is full, remove the oldest word before adding the new one
-    val (newWindow, updatedFreq) = if (window.size >= windowSize) {
-      val oldestWord = window.last // Get the oldest word in the window (last element)
-      val updatedFreq = wordFrequency.updatedWith(oldestWord) {
-        case Some(1) => None // Remove word if frequency is 1
-        case Some(freq) => Some(freq - 1)
-        case None => None
-      }
-      (word :: window.dropRight(1), updatedFreq) // Drop the last word from the window
-    } else {
-      (word :: window, wordFrequency)
-    }
-
-    // Update frequency map immutably for the new word
-    val finalFreq = updatedFreq.updatedWith(word) {
-      case Some(freq) => Some(freq + 1)
-      case None => Some(1)
-    }
-
-    (newWindow, finalFreq)
-  }
-  
-  // Function to print the word cloud
-  def printWordCloud(
-      wordFrequency: mutable.Map[String, Int],
-      cloudSize: Int,
-      minFrequency: Int,
-      updateChart: Seq[(String, Int)] => Unit
-  ): Unit = {
-    // Sort words by frequency and apply filters (minFrequency and cloudSize)
-    val sortedWords = wordFrequency.toSeq
-      .filter(_._2 >= minFrequency) // Only include words with sufficient frequency
-      .sortBy(-_._2) // Sort by frequency descending
-      .take(cloudSize)
-
-    // Format output as: word: frequency, word: frequency
-    val wordCloud = sortedWords.map { case (word, freq) => s"$word: $freq" }.mkString(" ")
-    println(wordCloud)
-
-    // Safely update the chart in the Swing thread
-    SwingUtilities.invokeLater(() => {
-      updateChart(sortedWords)
-    })
-  }
-
-  def processInput(
-      lines: Iterator[String],
-      minLength: Int,
-      window: List[String], // Change to immutable List
-      wordFrequency: Map[String, Int], // Change to immutable Map
-      windowSize: Int,
-      everyKSteps: Int,
-      cloudSize: Int,
-      minFrequency: Int,
-      ignoreList: Set[String],
-      updateChart: Seq[(String, Int)] => Unit
-    ): Unit = {
-      var steps = 0
-
-      // Stream processing for input
-      val words = 
-        import scala.language.unsafeNulls
-        lines
-        .flatMap(l => l.split("(?U)[^\\p{Alpha}0-9']+"))
-        .map(_.toLowerCase)
-        .filter(word => word != null && word.length >= minLength && !ignoreList.contains(word)) // Filter words
-
-      // Iterating over each word while immutably updating window and word frequency
-      var currentWindow = window
-      var currentWordFrequency = wordFrequency
-
-      // Convert immutable Map to mutable Map before passing to printWordCloud
-      words.foreach { word =>
-        val (newWindow, newWordFrequency) = updateWindowImmutable(word, currentWindow, currentWordFrequency, windowSize)
-        currentWindow = newWindow
-        currentWordFrequency = newWordFrequency
-        steps += 1
-
-        // Update and print word cloud every `everyKSteps`
-        if (currentWindow.size >= windowSize && steps % everyKSteps == 0) {
-          val mutableWordFrequency = mutable.Map[String, Int]() ++= currentWordFrequency
-          printWordCloud(mutableWordFrequency, cloudSize, minFrequency, updateChart)
-        }
-      }
-    }
+object Main extends InputProcessor with WordCloudProcessor with OutputHandler:
 
   // Create the chart and GUI
   def createChart(): (org.knowm.xchart.PieChart, SwingWrapper[org.knowm.xchart.PieChart]) = {
