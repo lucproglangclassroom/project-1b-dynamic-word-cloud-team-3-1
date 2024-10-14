@@ -5,6 +5,7 @@ import scala.io.StdIn
 import scala.sys.process._
 import mainargs.{main, arg, ParserForMethods, Flag}
 import org.knowm.xchart.{PieChartBuilder, SwingWrapper}
+import java.io.IOException
 
 object Main extends InputProcessor with WordCloudProcessor with OutputHandler:
 
@@ -77,6 +78,15 @@ object Main extends InputProcessor with WordCloudProcessor with OutputHandler:
       updateChartFn
     )
   }
-  def main(args: Array[String]): Unit = ParserForMethods(this).runOrExit(args.toIndexedSeq)
+  // SIGPIPE implementation to exit gracefully.
+  def main(args: Array[String]): Unit = {
+    try {
+      ParserForMethods(this).runOrExit(args.toIndexedSeq)
+    } catch {
+      case e: IOException =>
+        System.err.nn.println(s"SIGPIPE / IOException occurred in main method: ${e.getMessage}")
+        System.exit(1)
+    }
+  }
 
 end Main
