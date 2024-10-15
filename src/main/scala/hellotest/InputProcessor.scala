@@ -1,6 +1,5 @@
 package hellotest
 import scala.collection.mutable
-import scala.language.unsafeNulls
 
 trait InputProcessor { self: WordCloudProcessor with OutputHandler =>
   def processInput(
@@ -31,6 +30,14 @@ trait InputProcessor { self: WordCloudProcessor with OutputHandler =>
 
       // Convert immutable Map to mutable Map before passing to printWordCloud
       words.foreach { word =>
+
+        // Check for I/O errors like SIGPIPE
+        import scala.language.unsafeNulls
+        if (System.out.checkError()) {
+          println("SIGPIPE detected, exiting.")
+          System.exit(1)
+        }
+
         val (newWindow, newWordFrequency) = updateWindowImmutable(word, currentWindow, currentWordFrequency, windowSize)
         currentWindow = newWindow
         currentWordFrequency = newWordFrequency
